@@ -1,0 +1,158 @@
+// Prisma şeması
+
+// Veritabanı bağlantısı
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+// Modeller
+model Order {
+  id                      Int      @id @default(autoincrement())
+  userid                  String?
+  orderid                 String?
+  orderstate              String?
+  merchantid              String?
+  externalid              String?
+  currencycode            String?
+  createdtime             String?
+  updatedtime             String?
+  productid               String?
+  productcategory         String?
+  cost                    String?
+  title                   String?
+  provider                String?
+  providerid              Int?
+  providername            String?
+  providerlogo            String?
+  qrcode                  String?  @db.Text
+  phone                   String?
+  isrefundable            Boolean?
+  accesspointname         String?
+  activationcode          String?
+  smdpaddress             String?
+  activationinstructions  String?  @db.VarChar(512)
+  
+  @@map("orders")
+}
+
+model MobiUser {
+  id               BigInt    @id @default(autoincrement()) @map("userid")
+  name             String?
+  email            String?
+  image            String?
+  password         String?
+  emailverify      Boolean?
+  rewardbalance    Decimal?  @db.Decimal(32, 2)
+  referencecode    String?   @db.VarChar(4)
+  firstpurchase    Boolean?
+  verifytoken      String?
+  verifytokenexpiry DateTime?
+  membership       String?
+  
+  @@map("mobiusers")
+}
+
+model DashboardConfig {
+  id              Decimal  @id @db.Decimal(8, 0)
+  reward          Decimal? @db.Decimal(32, 2)
+  cashbackpercent Decimal? @db.Decimal(32, 2)
+  discountpercent Decimal? @db.Decimal(32, 2)
+  
+  @@map("dashboardconfig")
+}
+
+model RewardHistory {
+  transactionid   String   @id @db.Uuid
+  datetime        String?
+  email           String?
+  type            String?
+  amount          Decimal? @db.Decimal(32, 2)
+  rewardbalance   Decimal? @db.Decimal(32, 2)
+  
+  @@map("rewardhistory")
+}
+
+model AdminKey {
+  id          Int     @id @default(autoincrement())
+  merchantid  String?
+  apikey      String?
+  
+  @@map("adminkeys")
+}
+
+model SiteTitle {
+  id     Int     @id @default(autoincrement())
+  title  String?
+  
+  @@map("sitetitle")
+}
+
+// Ürün ve Kategori Modelleri
+model Country {
+  id          Int       @id @default(autoincrement())
+  name        String
+  code        String    @db.VarChar(2)
+  region      String?
+  flag_url    String?
+  is_popular  Boolean   @default(false)
+  status      String?   @default("active") @db.VarChar(50)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @default(now())
+  
+  @@map("countries")
+}
+
+model ProductCategory {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String
+  status      String?   @default("active") @db.VarChar(50)
+  created_at  DateTime  @default(now())
+  
+  @@map("product_categories")
+}
+
+model Provider {
+  id            Int       @id @default(autoincrement())
+  name          String
+  logo          String?
+  api_endpoint  String?
+  api_key       String?
+  api_secret    String?
+  status        String?   @default("active") @db.VarChar(50)
+  created_at    DateTime  @default(now())
+  products      Product[]
+  
+  @@map("providers")
+}
+
+model Product {
+  id                Int       @id @default(autoincrement())
+  title             String
+  description       String?   @db.Text
+  product_id        String    @unique
+  provider_id       Int?
+  provider          Provider? @relation(fields: [provider_id], references: [id])
+  data_amount       String
+  validity_days     Int
+  price             Decimal   @db.Decimal(10, 2)
+  discount_price    Decimal?  @db.Decimal(10, 2)
+  currency_code     String?   @default("USD") @db.VarChar(3)
+  countries         String?   @db.Text
+  regions           String?   @db.Text
+  category          String?   @default("esim") @db.VarChar(100)
+  type              String?   @default("country") @db.VarChar(50)
+  instructions      String?   @db.Text
+  access_point_name String?
+  featured          Boolean?  @default(false)
+  status            String?   @default("active") @db.VarChar(50)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @default(now())
+  
+  @@map("products")
+}
